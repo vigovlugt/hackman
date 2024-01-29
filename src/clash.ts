@@ -50,7 +50,9 @@ async function getClashTeam(riot: RiotAPI, username: string, usertag: string) {
 }
 
 function getPorofessorLink(players: RiotAPITypes.Account.AccountDTO[]) {
-	return `https://porofessor.gg/pregame/euw/${players.map((p) => encodeURIComponent(p.gameName + "-" + p.tagLine)).join(",")}/ranked-only`;
+	return `https://porofessor.gg/pregame/euw/${players
+		.map((p) => encodeURIComponent(p.gameName + "-" + p.tagLine))
+		.join(",")}/ranked-only/season`;
 }
 
 function positionToNumber(position: RiotAPITypes.Clash.PlayerDTO["position"]) {
