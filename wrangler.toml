@@ -1,6 +1,7 @@
 name = "hackman"
 main = "src/index.ts"
-compatibility_date = "2023-10-25"
+compatibility_date = "2024-01-29"
+node_compat = true
 
 # Variable bindings. These are arbitrary, plaintext strings (similar to environment variables)
 # Note: Use secrets to store sensitive data.

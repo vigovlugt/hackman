@@ -10,6 +10,9 @@
 
 import { InteractionResponseFlags, InteractionResponseType, InteractionType, verifyKey } from "discord-interactions";
 import { getTopSevenGGEmotes, Emote } from "./sevengg";
+import { json } from "./utils";
+import { commands } from "./commands";
+import { onClashCommand } from "./clash";
 
 export interface Env {
 	// Example binding to KV. Learn more at https://developers.cloudflare.com/workers/runtime-apis/kv/
@@ -30,33 +33,14 @@ export interface Env {
 	DISCORD_PUBLIC_KEY: string;
 	DISCORD_APPLICATION_ID: string;
 	DISCORD_TOKEN: string;
+	RIOT_API_KEY: string;
 
 	ADMIN_PASSWORD: string;
 }
 
-function json(body: any, init?: ResponseInit | undefined) {
-	return new Response(JSON.stringify(body), {
-		...init,
-		headers: { "Content-Type": "application/json", ...init?.headers },
-	});
-}
-
-async function updateEmotes(env: Env) {
+async function update(env: Env) {
 	const url = `https://discord.com/api/v10/applications/${env.DISCORD_APPLICATION_ID}/commands`;
-	const body = [
-		{
-			name: "e",
-			description: "Send a emote",
-			options: [
-				{
-					name: "emote",
-					description: "The emote to send",
-					type: 3,
-					required: true,
-				},
-			],
-		},
-	];
+	const body = Object.values(commands);
 	const response = await fetch(url, {
 		headers: {
 			"Content-Type": "application/json",
@@ -103,8 +87,8 @@ async function onEmoteCommand(interaction: any, env: Env) {
 export default {
 	async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
 		const url = new URL(request.url);
-		if (request.method === "GET" && url.pathname === "/emotes/update" && url.searchParams.get("password") === env.ADMIN_PASSWORD) {
-			await updateEmotes(env);
+		if (request.method === "GET" && url.pathname === "/update" && url.searchParams.get("password") === env.ADMIN_PASSWORD) {
+			await update(env);
 			return new Response("Updated emotes");
 		}
 
@@ -124,21 +108,34 @@ export default {
 
 		const interaction = (await request.json()) as any;
 
+		console.log(interaction);
+
 		switch (interaction.type) {
 			case InteractionType.APPLICATION_COMMAND:
 				switch (interaction.data.name.toLowerCase()) {
 					case "e":
 						return onEmoteCommand(interaction, env);
+					case "clash":
+						return onClashCommand(interaction, env);
+					case "update":
+						if (interaction.member.user.id !== "212219167087132672") {
+							return json({
+								type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+								data: {
+									content: "You are not allowed to use this command",
+									flags: InteractionResponseFlags.EPHEMERAL,
+								},
+							});
+						}
+						await update(env);
+						return new Response("Updated emotes");
 				}
 				break;
 			case InteractionType.PING:
 				return json({ type: InteractionResponseType.PONG });
-			default:
-				console.error("Unknown interaction type:", interaction.type);
-				return new Response("Unknown interaction type.", { status: 400 });
 		}
 
-		// Dispatch the request to the appropriate route
-		return new Response("Hello world!", { status: 200 });
+		console.error("Unknown interaction type:", interaction.type);
+		return new Response("Unknown interaction type.", { status: 400 });
 	},
 };
