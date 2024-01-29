@@ -1,15 +1,20 @@
 {
-  "name": "hackman",
-  "version": "0.0.0",
-  "private": true,
-  "scripts": {
-    "deploy": "wrangler deploy",
-    "dev": "wrangler dev",
-    "start": "wrangler dev"
-  },
-  "devDependencies": {
-    "@cloudflare/workers-types": "^4.20230419.0",
-    "typescript": "^5.0.4",
-    "wrangler": "^3.0.0"
-  }
+	"name": "hackman",
+	"version": "0.0.0",
+	"private": true,
+	"scripts": {
+		"deploy": "wrangler deploy",
+		"dev": "wrangler dev",
+		"start": "wrangler dev",
+		"ngrok": "ngrok http 8787"
+	},
+	"devDependencies": {
+		"@cloudflare/workers-types": "^4.20230419.0",
+		"ngrok": "5.0.0-beta.2",
+		"typescript": "^5.0.4",
+		"wrangler": "^3.15.0"
+	},
+	"dependencies": {
+		"discord-interactions": "^3.4.0"
+	}
 }
